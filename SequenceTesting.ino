@@ -1,4 +1,3 @@
-
 #include "ClearCore.h"
 #define CcioPort ConnectorCOM0
 // analog/pwm outputs
@@ -21,20 +20,22 @@
 #define TIME_POT    A10
 
 void startUP(){
-  Serial.println("Startup Sequence"); //
+  Serial.println("Startup Sequence Initiated"); //
 //digitalWrite(CL2, true); // need to set CL2 to some value
+  Serial.println("Startup Sequence Complete");
 }
 
 void situatePipe(){ //User input toggle SV3:S1:S2
+  Serial.println("Situate The Pipe:");
+  Serial.print("Press 1 to toggle SV3:S1 \nPress 2 to toggle SV3:S2\nPress f to finish\nPress 0 to turn off\n Press r to reset");
 
-  Serial.print("Press 1 to toggle SV3:S1 \nPress 2 to toggle SV3:S2\nPress f to finish\n");
   while(true){
   if(Serial.available() > 0){ 
     char command = Serial.read();
-    if (command == '1'){ //HOLD 1 to toggle SV3:S1 on
+    if (command == '1'){ //Press 1 to toggle SV3:S1 on
       digitalWrite(SV3_S1, true);
     }
-    if (command == '2'){ //HOLD 2 to toggle SV3:S2 on
+    if (command == '2'){ //Press 2 to toggle SV3:S2 on
       digitalWrite(SV3_S2, true);
     }
     if (command == '0'){ //Should default to 0, turn SV3:S1 and SV3:S2 off
@@ -46,12 +47,13 @@ void situatePipe(){ //User input toggle SV3:S1:S2
       digitalWrite(SV3_S2, false);
       break;
     }
-    if(command != '1' | command != '2' | command != '0' | command != 'f'){ //account for bad keyboard entry
-      Serial.println("Invalid Entry");
-}}}}
+    if (command == 'r'){
+      situatePipe();
+    }
+    }}}
 
 void situateFitting_centerClamp(){//User input toggle SV4:S1:S2
-
+  Serial.println("Situate the Center Fitting:");
   Serial.print("Press 1 to toggle SV4:S1 \nPress 2 to toggle SV4:S2\nPress f to finish\n");
   while(true){
   if(Serial.available() > 0){
@@ -73,8 +75,13 @@ void situateFitting_centerClamp(){//User input toggle SV4:S1:S2
     }
     if(command != '1' | command != '2' | command != '0' | command != 'f'){
       Serial.println("Invalid Entry");
-}}}}
+}
+if (command == 'r'){
+      situateFitting_centerClamp();
+    }
+}}}
 void situateFitting_sledClamp(){
+  Serial.println("Situate the Sled Clamp Fitting");
   Serial.print("Press 1 to toggle SV2:S1 \nPress 2 to toggle SV2:S2\nPress f to finish\n");
   while(true){
   if(Serial.available() > 0){
@@ -96,13 +103,20 @@ void situateFitting_sledClamp(){
     }
     if(command != '1' | command != '2' | command != '0' | command != 'f'){
       Serial.println("Invalid Entry");
-}}}}
+}
+if (command == 'r'){
+      situateFitting_sledClamp();
+    }
+}}}
 
 void variableInput(){
+  Serial.print("Please enter the input runtime: ");
   int inputRunTime = 2000;
+  Serial.println("");
 }
 
 void startCycle(){
+  Serial.println("Cycle Ready to Initiate");
   Serial.print("Press s to start\n");
   while(true){
   if(Serial.available() > 0){
@@ -133,14 +147,19 @@ void startCycle(){
       digitalWrite(SV5_S2, true);
       delay(1000);
       digitalWrite(SV5_S2, false);
-}}}}
+      Serial.println("Cycle Complete");
+      break;
+
+}
+}}}
 
 void brake(){
-
+Serial.println("Initiating Braking in 3... 2... 1...");
+Serial.println("Braking Complete");
 }
 
 void setup() {
-Serial.begin(115200); //baud rate
+Serial.begin(9600); //baud rate
 CcioPort.Mode(Connector::CCIO); //Connect Expansion Board
 CcioPort.PortOpen();
     //MAINBOARD
@@ -167,6 +186,7 @@ void loop() {
     variableInput();
     startCycle();
     brake();
+    loop();
 
 }
     
