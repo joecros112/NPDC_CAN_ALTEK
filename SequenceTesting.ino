@@ -1,3 +1,4 @@
+
 #include "ClearCore.h"
 #define CcioPort ConnectorCOM0
 // analog/pwm outputs
@@ -119,7 +120,7 @@ void startCycle(){
 
   Serial.println("Cycle Ready to Initiate");
   Serial.print("Press s to start: ");
-
+while(true){
   if(Serial.available() > 0){
     char command = Serial.read();
     Serial.println("");
@@ -150,10 +151,10 @@ void startCycle(){
       delay(1000);
       digitalWrite(SV5_S2, false);
       Serial.println("Cycle Complete");
-      
+      break;
 
 }
-}}
+}}}
 
 void brake(){
 Serial.println("Initiating Braking in 3... 2... 1...");
@@ -193,4 +194,3 @@ void loop() {
 
 }
     
-
