@@ -18,16 +18,19 @@
 #define START_BTN   DI6
 #define SPEED_POT   A9
 #define TIME_POT    A10
+//constant
 
-void startUP(){
-  Serial.println("Startup Sequence Initiated"); //
-//digitalWrite(CL2, true); // need to set CL2 to some value
+
+void startUP(){ //1. Startup, set CL2 to some value
+  Serial.println("Startup Sequence Initiated"); 
+  //digitalWrite(CL2, true); // need to set CL2 to some value
   Serial.println("Startup Sequence Complete");
 }
 
-void situatePipe(){ //User input toggle SV3:S1:S2
+void situatePipe(){ //2. User input toggle SV3:S1:S2 to situate pipe
+  
   Serial.println("Situate The Pipe:");
-  Serial.print("Press 1 to toggle SV3:S1 \nPress 2 to toggle SV3:S2\nPress f to finish\nPress 0 to turn off\n Press r to reset");
+  Serial.print("Press 1 to toggle SV3:S1 \nPress 2 to toggle SV3:S2\nPress f to finish\nPress r to reset\n");
 
   while(true){
   if(Serial.available() > 0){ 
@@ -38,7 +41,7 @@ void situatePipe(){ //User input toggle SV3:S1:S2
     if (command == '2'){ //Press 2 to toggle SV3:S2 on
       digitalWrite(SV3_S2, true);
     }
-    if (command == '0'){ //Should default to 0, turn SV3:S1 and SV3:S2 off
+    if (command == '0'){ //Should default to turn SV3:S1 and SV3:S2 off
       digitalWrite(SV3_S1, false);
       digitalWrite(SV3_S2, false);
     }
@@ -54,7 +57,7 @@ void situatePipe(){ //User input toggle SV3:S1:S2
 
 void situateFitting_centerClamp(){//User input toggle SV4:S1:S2
   Serial.println("Situate the Center Fitting:");
-  Serial.print("Press 1 to toggle SV4:S1 \nPress 2 to toggle SV4:S2\nPress f to finish\n");
+  Serial.print("Press 1 to toggle SV4:S1 \nPress 2 to toggle SV4:S2\nPress f to finish\nPress r to reset\n");
   while(true){
   if(Serial.available() > 0){
     char command = Serial.read();
@@ -64,7 +67,7 @@ void situateFitting_centerClamp(){//User input toggle SV4:S1:S2
     if (command == '2'){
       digitalWrite(SV4_S2, true); //PRESS 2 to toggle SV4:S2 on
     }
-    if (command == '0'){ //Default to 0, turns SV4:S1 and SV4:S2 off
+    if (command == '0'){ //Default turns SV4:S1 and SV4:S2 off
       digitalWrite(SV4_S1, false);
       digitalWrite(SV4_S2, false);
     }
@@ -73,16 +76,15 @@ void situateFitting_centerClamp(){//User input toggle SV4:S1:S2
       digitalWrite(SV4_S2, false);
       break;
     }
-    if(command != '1' | command != '2' | command != '0' | command != 'f'){
-      Serial.println("Invalid Entry");
-}
+    
 if (command == 'r'){
       situateFitting_centerClamp();
     }
 }}}
+
 void situateFitting_sledClamp(){
   Serial.println("Situate the Sled Clamp Fitting");
-  Serial.print("Press 1 to toggle SV2:S1 \nPress 2 to toggle SV2:S2\nPress f to finish\n");
+  Serial.print("Press 1 to toggle SV2:S1 \nPress 2 to toggle SV2:S2\nPress f to finish\nPress r to reset\n");
   while(true){
   if(Serial.available() > 0){
     char command = Serial.read();
@@ -92,7 +94,7 @@ void situateFitting_sledClamp(){
     if (command == '2'){ //PRESS 2 to toggle SV3:S2 on
       digitalWrite(SV2_S2, true);
     }
-    if (command == '0'){ //Default to 0, turns SV4:S1 and SV4:S2 off
+    if (command == '0'){ //Default turns SV4:S1 and SV4:S2 off
       digitalWrite(SV2_S1, false); 
       digitalWrite(SV2_S2, false);
     }
@@ -101,9 +103,7 @@ void situateFitting_sledClamp(){
       digitalWrite(SV2_S2, false);
       break;
     }
-    if(command != '1' | command != '2' | command != '0' | command != 'f'){
-      Serial.println("Invalid Entry");
-}
+   
 if (command == 'r'){
       situateFitting_sledClamp();
     }
@@ -116,11 +116,13 @@ void variableInput(){
 }
 
 void startCycle(){
+
   Serial.println("Cycle Ready to Initiate");
-  Serial.print("Press s to start\n");
-  while(true){
+  Serial.print("Press s to start: ");
+
   if(Serial.available() > 0){
     char command = Serial.read();
+    Serial.println("");
     if (command == 's'){
       digitalWrite(SV2_S1, true);
       digitalWrite(SV2_S2, true);
@@ -148,10 +150,10 @@ void startCycle(){
       delay(1000);
       digitalWrite(SV5_S2, false);
       Serial.println("Cycle Complete");
-      break;
+      
 
 }
-}}}
+}}
 
 void brake(){
 Serial.println("Initiating Braking in 3... 2... 1...");
@@ -179,6 +181,7 @@ CcioPort.PortOpen();
 
 void loop() {
   Serial.println("");
+
     startUP();
     situatePipe();
     situateFitting_centerClamp();
