@@ -13,11 +13,11 @@
 #define SV4_S2  CLEARCORE_PIN_CCIOA1 // MIDDLE CLAMP close
 #define SV5_S1  CLEARCORE_PIN_CCIOA2 // PRESSURE CYLINDERS open
 #define SV5_S2  CLEARCORE_PIN_CCIOA3 // PRESSURE CYLINDERS close
-#define BRAKE   CLEARCORE_PIN_CCIOA4 // BRAKE MOTORS
+//#define BRAKE   CLEARCORE_PIN_CCIOA4 // BRAKE MOTORS
 //inputs
-#define Switch1 DI7
-#define Switch2 DI8
-#define EnterSwitch CLEARCORE_PIN_CCIOA5
+#define Switch1 CLEARCORE_PIN_CCIOA4
+#define Switch2 CLEARCORE_PIN_CCIOA5
+#define EnterSwitch CLEARCORE_PIN_CCIOA6
 #define START_BTN   DI6
 #define SPEED_POT   A9
 #define TIME_POT    A10
@@ -44,7 +44,9 @@ while(digitalRead(Switch2)){
 digitalWrite(SV3_S1, false);
 digitalWrite(SV3_S2, false);
 if(digitalRead(EnterSwitch)){
+  delay(3000);
   break;
+  
 }
 }
 }
@@ -54,23 +56,24 @@ void situateFitting_centerClamp(){//User input toggle SV4:S1:S2
   Serial.println("Situate the Center Fitting:");
   Serial.print("Press 1 to toggle SV4:S1 \nPress 2 to toggle SV4:S2\nPress f to finish\nPress r to reset\n");
   while(true){
-while(digitalRead(Switch1)){
-  digitalWrite(SV4_S1, true);
+    while(digitalRead(Switch1)){
+      digitalWrite(SV4_S1, true);
 }
-while(digitalRead(Switch2)){
-  digitalWrite(SV4_S2, true);
+    while(digitalRead(Switch2)){
+      digitalWrite(SV4_S2, true);
 }
-digitalWrite(SV4_S1, false);
-digitalWrite(SV4_S2, false);
-if(digitalRead(EnterSwitch)){
-  break;
+    digitalWrite(SV4_S1, false);
+    digitalWrite(SV4_S2, false);
+    if(digitalRead(EnterSwitch)){
+      digitalWrite(SV4_S1, false);
+      digitalWrite(SV4_S2, false);
+      delay(3000);
+      break;
+      
 }
 }
 }
  
-    
-
-
 void situateFitting_sledClamp(){
   Serial.println("Situate the Sled Clamp Fitting");
   Serial.print("Press 1 to toggle SV2:S1 \nPress 2 to toggle SV2:S2\nPress f to finish\nPress r to reset\n");
@@ -84,6 +87,9 @@ while(digitalRead(Switch2)){
 digitalWrite(SV2_S1, false);
 digitalWrite(SV2_S2, false);
 if(digitalRead(EnterSwitch)){
+  digitalWrite(SV4_S1, false);
+  digitalWrite(SV4_S2, false);
+  delay(3000);
   break;
 }
 }
@@ -99,12 +105,9 @@ void variableInput(){
 void startCycle(){
 
   Serial.println("Cycle Ready to Initiate");
-  Serial.print("Press s to start: ");
+  Serial.print("Press enter to start: ");
 while(true){
-  if(Serial.available() > 0){
-    char command = Serial.read();
-    Serial.println("");
-    if (command == 's'){
+    if (digitalRead(EnterSwitch)){
       digitalWrite(SV2_S1, true);
       digitalWrite(SV2_S2, true);
       digitalWrite(SV4_S1, true);
@@ -117,7 +120,7 @@ while(true){
       delay(2000); //VARIALBE RUNTIME HERE
       digitalWrite(CL1, false);
       digitalWrite(CL2, false);//STOP CL1, CL2
-      digitalWrite(BRAKE, true);
+      //digitalWrite(BRAKE, true);
       delay(5000);
       digitalWrite(SV5_S1, false);
       digitalWrite(SV2_S1, false);
@@ -131,10 +134,12 @@ while(true){
       delay(1000);
       digitalWrite(SV5_S2, false);
       Serial.println("Cycle Complete");
+      delay(3000);
       break;
+      
 
 }
-}}}
+}}
 
 void brake(){
 Serial.println("Initiating Braking in 3... 2... 1...");
@@ -157,6 +162,11 @@ CcioPort.PortOpen();
     pinMode(SV4_S2, OUTPUT);
     pinMode(SV5_S1, OUTPUT);
     pinMode(SV5_S2, OUTPUT);
+    pinMode(Switch1, INPUT);
+    pinMode(Switch2, INPUT);
+    pinMode(EnterSwitch, INPUT);
+    
+
 
 }
 
@@ -164,13 +174,21 @@ void loop() {
   Serial.println("");
 
     startUP();
+    Serial.println(".........................................................");
     situatePipe();
+    Serial.println(".........................................................");
     situateFitting_centerClamp();
+    Serial.println(".........................................................");
     situateFitting_sledClamp();
+    Serial.println(".........................................................");
     variableInput();
+    Serial.println(".........................................................");
     startCycle();
+    Serial.println(".........................................................");
     brake();
+    Serial.println(".........................................................");
     loop();
+    
 
 }
     
