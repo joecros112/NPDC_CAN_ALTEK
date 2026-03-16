@@ -18,6 +18,7 @@
 #define Switch1 CLEARCORE_PIN_CCIOA4
 #define Switch2 CLEARCORE_PIN_CCIOA5
 #define EnterSwitch CLEARCORE_PIN_CCIOA6
+#define ResetSwitch CLEARCORE_PIN_CCIOA7
 #define START_BTN   DI6
 #define SPEED_POT   A9
 #define TIME_POT    A10
@@ -31,24 +32,31 @@ void startUP(){ //1. Startup, set CL2 to some value
 }
 
 void situatePipe(){ //2. User input toggle SV3:S1:S2 to situate pipe
-  
-Serial.println("Situate The Pipe:");
-Serial.print("Press 1 to toggle SV3:S1 \nPress 2 to toggle SV3:S2\nPress f to finish\nPress r to reset\n");
-while(true){
-while(digitalRead(Switch1)){
-  digitalWrite(SV3_S1, true);
-}
-while(digitalRead(Switch2)){
-  digitalWrite(SV3_S2, true);
-}
-digitalWrite(SV3_S1, false);
-digitalWrite(SV3_S2, false);
-if(digitalRead(EnterSwitch)){
-  delay(3000);
-  break;
-  
-}
-}
+  Serial.println("Situate The Pipe:");
+  Serial.print("Press 1 to toggle SV3:S1 \nPress 2 to toggle SV3:S2\nPress Enter to finish\nPress Return to reset\n");
+  while(true){
+    digitalWrite(SV3_S1, false);
+    digitalWrite(SV3_S2, false);
+    while(digitalRead(Switch1)){
+      digitalWrite(SV3_S1, true);
+    }
+    while(digitalRead(Switch2)){
+      digitalWrite(SV3_S2, true);
+    }
+    digitalWrite(SV3_S1, false);
+    digitalWrite(SV3_S2, false);
+    if(digitalRead(ResetSwitch)){
+      Serial.println("Restarting Startup Sequence");
+      delay(1000);
+      startUP();
+    }
+    if(digitalRead(EnterSwitch)){
+      Serial.println("Finished");
+      Serial.println(".........................................................");
+      delay(3000);
+      break;
+    }
+  } 
 }
   
 
@@ -56,43 +64,62 @@ void situateFitting_centerClamp(){//User input toggle SV4:S1:S2
   Serial.println("Situate the Center Fitting:");
   Serial.print("Press 1 to toggle SV4:S1 \nPress 2 to toggle SV4:S2\nPress f to finish\nPress r to reset\n");
   while(true){
+    digitalWrite(SV4_S1, false);
+    digitalWrite(SV4_S2, false);
     while(digitalRead(Switch1)){
       digitalWrite(SV4_S1, true);
-}
+    }
     while(digitalRead(Switch2)){
       digitalWrite(SV4_S2, true);
-}
+    }
     digitalWrite(SV4_S1, false);
     digitalWrite(SV4_S2, false);
     if(digitalRead(EnterSwitch)){
       digitalWrite(SV4_S1, false);
       digitalWrite(SV4_S2, false);
+      Serial.println("Finished");
+      Serial.println(".........................................................");
       delay(3000);
       break;
-      
-}
-}
+    }
+    if(digitalRead(ResetSwitch)){
+      Serial.println("Reseting...");
+      Serial.println(".........................................................");
+      delay(1000);
+      situatePipe();
+    }
+  }
 }
  
 void situateFitting_sledClamp(){
   Serial.println("Situate the Sled Clamp Fitting");
   Serial.print("Press 1 to toggle SV2:S1 \nPress 2 to toggle SV2:S2\nPress f to finish\nPress r to reset\n");
   while(true){
-while(digitalRead(Switch1)){
-  digitalWrite(SV2_S1, true);
-}
-while(digitalRead(Switch2)){
-  digitalWrite(SV2_S2, true);
-}
-digitalWrite(SV2_S1, false);
-digitalWrite(SV2_S2, false);
-if(digitalRead(EnterSwitch)){
-  digitalWrite(SV4_S1, false);
-  digitalWrite(SV4_S2, false);
-  delay(3000);
-  break;
-}
-}
+    digitalWrite(SV2_S1, false);
+    digitalWrite(SV2_S2, false);
+    while(digitalRead(Switch1)){
+      digitalWrite(SV2_S1, true);
+    }
+    while(digitalRead(Switch2)){
+      digitalWrite(SV2_S2, true);
+    }
+    digitalWrite(SV2_S1, false);
+    digitalWrite(SV2_S2, false);
+    if(digitalRead(EnterSwitch)){
+      digitalWrite(SV4_S1, false);
+      digitalWrite(SV4_S2, false);
+      Serial.println("Finished");
+      Serial.println(".........................................................");
+      delay(3000);
+      break;
+    }
+    if(digitalRead(ResetSwitch)){
+      Serial.println("Reseting...");
+      Serial.println(".........................................................");
+      delay(1000);
+      situateFitting_centerClamp();
+    }
+  }
 }
   
 
@@ -103,10 +130,9 @@ void variableInput(){
 }
 
 void startCycle(){
-
   Serial.println("Cycle Ready to Initiate");
   Serial.print("Press enter to start: ");
-while(true){
+  while(true){
     if (digitalRead(EnterSwitch)){
       digitalWrite(SV2_S1, true);
       digitalWrite(SV2_S2, true);
@@ -136,8 +162,6 @@ while(true){
       Serial.println("Cycle Complete");
       delay(3000);
       break;
-      
-
 }
 }}
 
@@ -174,7 +198,6 @@ void loop() {
   Serial.println("");
 
     startUP();
-    Serial.println(".........................................................");
     situatePipe();
     Serial.println(".........................................................");
     situateFitting_centerClamp();
@@ -191,6 +214,5 @@ void loop() {
     
 
 }
-    
 
 
