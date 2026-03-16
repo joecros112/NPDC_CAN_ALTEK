@@ -4,6 +4,12 @@
 #define CL1  IO0 // motor speed (HSPEC1)
 #define CL2  IO1 // master fluid valve (PV1)
 //solenoid outputs on controller
+#define SV2_S1  IO2 // SLED CLAMPS ope#include "ClearCore.h"
+#define CcioPort ConnectorCOM0
+// analog/pwm outputs
+#define CL1  IO0 // motor speed (HSPEC1)
+#define CL2  IO1 // master fluid valve (PV1)
+//solenoid outputs on controller
 #define SV2_S1  IO2 // SLED CLAMPS open
 #define SV2_S2  IO3 // SLED CLAMPS close
 #define SV3_S1  IO4 // SIDE CLAMPS open
@@ -13,25 +19,24 @@
 #define SV4_S2  CLEARCORE_PIN_CCIOA1 // MIDDLE CLAMP close
 #define SV5_S1  CLEARCORE_PIN_CCIOA2 // PRESSURE CYLINDERS open
 #define SV5_S2  CLEARCORE_PIN_CCIOA3 // PRESSURE CYLINDERS close
-//#define BRAKE   CLEARCORE_PIN_CCIOA4 // BRAKE MOTORS
+#define BRAKE   CLEARCORE_PIN_CCIOA4 // BRAKE MOTORS
 //inputs
-#define Switch1 CLEARCORE_PIN_CCIOA4
-#define Switch2 CLEARCORE_PIN_CCIOA5
-#define EnterSwitch CLEARCORE_PIN_CCIOA6
-#define ResetSwitch CLEARCORE_PIN_CCIOA7
-#define START_BTN   DI6
+#define Switch1 DI8
+#define Switch2 DI7
+#define EnterSwitch DI6
+#define ResetSwitch CLEARCORE_PIN_CCIOA4
 #define SPEED_POT   A9
 #define TIME_POT    A10
 //constant
 
 
-void startUP(){ //1. Startup, set CL2 to some value
+void startUP(){ //1. Startup, Machine turns on. set CL2 to some value. CL2 Value may need to continually change
   Serial.println("Startup Sequence Initiated"); 
   //digitalWrite(CL2, true); // need to set CL2 to some value
   Serial.println("Startup Sequence Complete");
 }
 
-void situatePipe(){ //2. User input toggle SV3:S1:S2 to situate pipe
+void situatePipe(){ //2.Situate the pipe into place on both left and right side. User input toggle SV3:S1:S2 to situate pipe
   Serial.println("Situate The Pipe:");
   Serial.print("Press 1 to toggle SV3:S1 \nPress 2 to toggle SV3:S2\nPress Enter to finish\nPress Return to reset\n");
   while(true){
@@ -60,7 +65,7 @@ void situatePipe(){ //2. User input toggle SV3:S1:S2 to situate pipe
 }
   
 
-void situateFitting_centerClamp(){//User input toggle SV4:S1:S2
+void situateFitting_centerClamp(){//3.Situate the fitting into the center clamp. User input toggle SV4:S1:S2
   Serial.println("Situate the Center Fitting:");
   Serial.print("Press 1 to toggle SV4:S1 \nPress 2 to toggle SV4:S2\nPress f to finish\nPress r to reset\n");
   while(true){
@@ -91,7 +96,7 @@ void situateFitting_centerClamp(){//User input toggle SV4:S1:S2
   }
 }
  
-void situateFitting_sledClamp(){
+void situateFitting_sledClamp(){//4. situate fitting into the sled clamps. This requires a manual toggle of SV2:S1:S2
   Serial.println("Situate the Sled Clamp Fitting");
   Serial.print("Press 1 to toggle SV2:S1 \nPress 2 to toggle SV2:S2\nPress f to finish\nPress r to reset\n");
   while(true){
@@ -123,13 +128,18 @@ void situateFitting_sledClamp(){
 }
   
 
-void variableInput(){
+int variableInput(){//5.variable input, the operator will input the desired motor speed and run time which will control cl1 and cl2
   Serial.print("Please enter the input runtime: ");
   int inputRunTime = 2000;
+  return inputRunTime;
   Serial.println("");
 }
 
-void startCycle(){
+void startCycle(int variableRunTime){//6.Operator initiated spinning sequence
+/*
+This should fire SV2:S1, SV3:S1 and SV4:S1. Wait two seconds, fire precalculated singals into CL1 and CL2 (spinning), wait two seconds. Fire SV5:S1 and start timer for inputted run time
+*/
+
   Serial.println("Cycle Ready to Initiate");
   Serial.print("Press enter to start: ");
   while(true){
@@ -143,31 +153,53 @@ void startCycle(){
       delay(2000);
       digitalWrite(SV5_S1, true); 
       //POSSIBLY fire SV5_S2 here;
-      delay(2000); //VARIALBE RUNTIME HERE
-      digitalWrite(CL1, false);
-      digitalWrite(CL2, false);//STOP CL1, CL2
-      //digitalWrite(BRAKE, true);
-      delay(5000);
-      digitalWrite(SV5_S1, false);
-      digitalWrite(SV2_S1, false);
-      digitalWrite(SV3_S1, false);
-      digitalWrite(SV4_S1, false);
-      digitalWrite(SV2_S2, false);
-      digitalWrite(SV3_S2, false);
-      digitalWrite(SV4_S2, false);
-      delay(1000);
-      digitalWrite(SV5_S2, true);
-      delay(1000);
-      digitalWrite(SV5_S2, false);
-      Serial.println("Cycle Complete");
-      delay(3000);
+      delay(variableRunTime); //VARIALBE RUNTIME HERE
+    
       break;
 }
 }}
 
-void brake(){
-Serial.println("Initiating Braking in 3... 2... 1...");
-Serial.println("Braking Complete");
+void brake(){//7.Brake sequence
+/*
+after run time, remove signals from above. wait 5 seconds, fire brake moters, turn off SV5:S1, SV2:S1, SV3:S1, SV4:S1
+turn on SV2:S2, SV3:S2, SV4:S2 wait one second, Fire SV5:S2
+*/
+  Serial.println("Initiating Braking");
+  digitalWrite(CL1, false);
+  digitalWrite(CL2, false);//STOP CL1, CL2
+  digitalWrite(BRAKE, true); //fire brake motors
+  delay(5000);
+  digitalWrite(SV5_S1, false);
+  digitalWrite(SV2_S1, false);
+  digitalWrite(SV3_S1, false);
+  digitalWrite(SV4_S1, false);
+  digitalWrite(SV2_S2, true);
+  digitalWrite(SV3_S2, true);
+  digitalWrite(SV4_S2, true);
+  delay(1000);
+  digitalWrite(SV5_S2, true);
+  delay(1000);
+  digitalWrite(SV5_S2, false);
+  Serial.println("Cycle Complete");
+  digitalWrite(SV2_S2, false);
+  digitalWrite(SV3_S2, false);
+  digitalWrite(SV4_S2, false);
+  delay(3000);
+  Serial.println("Braking Complete");
+  delay(1000);
+}
+
+void shutOFF(){
+  digitalWrite(SV2_S1, false);
+  digitalWrite(SV2_S2, false);
+  digitalWrite(SV3_S1, false);
+  digitalWrite(SV3_S2, false);
+  digitalWrite(SV4_S1, false);
+  digitalWrite(SV4_S2, false);
+  digitalWrite(SV5_S1, false);
+  digitalWrite(SV5_S2, false);
+  digitalWrite(CL1, false);
+  digitalWrite(CL2, false);
 }
 
 void setup() {
@@ -204,15 +236,17 @@ void loop() {
     Serial.println(".........................................................");
     situateFitting_sledClamp();
     Serial.println(".........................................................");
-    variableInput();
+    int variableRunTime = variableInput();
     Serial.println(".........................................................");
-    startCycle();
+    startCycle(variableRunTime);
     Serial.println(".........................................................");
     brake();
+    shutOFF();
     Serial.println(".........................................................");
     loop();
     
 
 }
+    
 
 
