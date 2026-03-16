@@ -6,6 +6,8 @@
 //solenoid outputs on controller
 #define SV2_S1  IO2 // SLED CLAMPS ope#include "ClearCore.h"
 #define CcioPort ConnectorCOM0
+// analog/pwm outputs#include "ClearCore.h"
+#define CcioPort ConnectorCOM0
 // analog/pwm outputs
 #define CL1  IO0 // motor speed (HSPEC1)
 #define CL2  IO1 // master fluid valve (PV1)
@@ -28,6 +30,9 @@
 #define SPEED_POT   A9
 #define TIME_POT    A10
 //constant
+#define SPEED_POT_RESOLUTION 12//resolution of analog in, 8, 10, 12
+#define TIME_POT_RESOLUTION 12
+#define baudRate 9600
 
 
 void startUP(){ //1. Startup, Machine turns on. set CL2 to some value. CL2 Value may need to continually change
@@ -128,14 +133,24 @@ void situateFitting_sledClamp(){//4. situate fitting into the sled clamps. This 
 }
   
 
-int variableInput(){//5.variable input, the operator will input the desired motor speed and run time which will control cl1 and cl2
+float variableInput(){//5.variable input, the operator will input the desired motor speed and run time which will control cl1 and cl2
   Serial.print("Please enter the input runtime: ");
-  int inputRunTime = 2000;
-  return inputRunTime;
+  int inputRunTime;
+  while(true){
+    inputRunTime = analogRead(TIME_POT);
+    Serial.print("current time is: " );
+    Serial.print(inputRunTime * 0.01);
+    Serial.println("s.");
+    if(digitalRead(EnterSwitch)){
+      break;
+    }
+  }
+  return inputRunTime * 0.01;
+  delay(1000);
   Serial.println("");
 }
 
-void startCycle(int variableRunTime){//6.Operator initiated spinning sequence
+void startCycle(float variableRunTime){//6.Operator initiated spinning sequence
 /*
 This should fire SV2:S1, SV3:S1 and SV4:S1. Wait two seconds, fire precalculated singals into CL1 and CL2 (spinning), wait two seconds. Fire SV5:S1 and start timer for inputted run time
 */
@@ -153,7 +168,7 @@ This should fire SV2:S1, SV3:S1 and SV4:S1. Wait two seconds, fire precalculated
       delay(2000);
       digitalWrite(SV5_S1, true); 
       //POSSIBLY fire SV5_S2 here;
-      delay(variableRunTime); //VARIALBE RUNTIME HERE
+      delay(variableRunTime * 1000); //VARIALBE RUNTIME HERE
     
       break;
 }
@@ -203,25 +218,34 @@ void shutOFF(){
 }
 
 void setup() {
-Serial.begin(9600); //baud rate
+Serial.begin(baudRate); //baud rate
 CcioPort.Mode(Connector::CCIO); //Connect Expansion Board
 CcioPort.PortOpen();
-    //MAINBOARD
+uint32_t timeout = 5000;
+uint32_t startTime = millis();
+while(!Serial && millis() - startTime < timeout){
+  continue;
+}
+    
     pinMode(CL1, OUTPUT);
     pinMode(CL2, OUTPUT);
+
     pinMode(SV2_S1, OUTPUT);
     pinMode(SV2_S2, OUTPUT);
     pinMode(SV3_S1, OUTPUT);
     pinMode(SV3_S2, OUTPUT);
-    //EXPANSIONBOARD
     pinMode(SV4_S1, OUTPUT);
     pinMode(SV4_S2, OUTPUT);
     pinMode(SV5_S1, OUTPUT);
     pinMode(SV5_S2, OUTPUT);
+
     pinMode(Switch1, INPUT);
     pinMode(Switch2, INPUT);
+
     pinMode(EnterSwitch, INPUT);
+    pinMode(ResetSwitch, INPUT);
     
+    analogReadResolution(TIME_POT_RESOLUTION);
 
 
 }
