@@ -1,3 +1,4 @@
+#This is the code that you control with the switches and potentiometers
 #include "ClearCore.h"
 #define CcioPort ConnectorCOM0
 // analog/pwm outputs
