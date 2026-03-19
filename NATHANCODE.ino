@@ -22,6 +22,30 @@
 #define SV3_S2 IO5 // SIDE CLAMPS close
 
 // solenoid outputs - CCIO-8
+/*
+ * CanalTek: skid steer hydraulic control system
+ * Hardware: ClearCore Controller + CCIO-8 expansion module
+ * Author: n.rago
+ * Date: 12/28/2025
+ *
+ * All-caps identifiers reference physical hardware only
+ * Test mode: SW_PREV/SW_NEXT cycle through states, SW_ENTER confirms
+ */
+
+#include "ClearCore.h"
+
+// PIN ASSIGNMENTS
+// analog outputs
+#define CL1 IO0 // motor speed (HSPEC1)
+#define CL2 IO1 // master fluid valve (PV1)
+
+// solenoid outputs - mainboard
+#define SV2_S1 IO2 // SLED CLAMPS open
+#define SV2_S2 IO3 // SLED CLAMPS close
+#define SV3_S1 IO4 // SIDE CLAMPS open
+#define SV3_S2 IO5 // SIDE CLAMPS close
+
+// solenoid outputs - CCIO-8
 #define SV4_S1 CLEARCORE_PIN_CCIOA0 // MIDDLE CLAMP open
 #define SV4_S2 CLEARCORE_PIN_CCIOA1 // MIDDLE CLAMP close
 #define SV5_S1 CLEARCORE_PIN_CCIOA2 // PRESSURE CYLINDERS open
@@ -29,12 +53,12 @@
 #define BRAKE CLEARCORE_PIN_CCIOA7 // BRAKE MOTORS
 
 // test mode switches - CCIO-8
-#define Switch1 CLEARCORE_PIN_CCIOA4 // step backward through states
-#define Switch2 CLEARCORE_PIN_CCIOA5 // step forward through states
-#define EnterSwitch CLEARCORE_PIN_CCIOA6 // enter/activate current state
+#define Switch1 DI8 // step backward through states
+#define Switch2 DI7 // step forward through states
+#define EnterSwitch DI6 // enter/activate current state
 
 // inputs - mainboard
-#define START_BTN DI6
+#define START_BTN CLEARCORE_PIN_CCIOA4
 #define SPEED_POT A9
 #define TIME_POT A10
 
